@@ -1,0 +1,22 @@
+CREATE TABLE artists (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  album_ids INT[] DEFAULT NULL
+);
+
+CREATE TABLE albums (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  cover VARCHAR(255) NOT NULL,
+  artist_id INT DEFAULT NULL,
+  audio_ids INT[] DEFAULT NULL,
+  FOREIGN KEY (artist_id) REFERENCES artists(id) ON DELETE CASCADE
+);
+
+CREATE TABLE audios (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  path VARCHAR(255) NOT NULL,
+  album_id INT DEFAULT NULL,
+  FOREIGN KEY (album_id) REFERENCES albums(id) ON DELETE CASCADE
+);
