@@ -1,23 +1,34 @@
 const db = require('../db');
 const path = require('path');
-const {convertToM4A} = require('../scripts/converter');
+const fs = require('fs');
+const {convertToM4a} = require('../scripts/converter');
 
-// seulement en local file : "test.mp3"
 async function createAudio(req, res) {
   try {
-    const {title, file} = req.body;
+    const {title} = req.body;
+    const audioFile = req.file;
+
+    if (!audioFile) {
+      res.status(400).json({error: 'No audio file uploaded'});
+      return;
+    }
+    const inputBuffer = audioFile.buffer;
+
+    const originalFileName = audioFile.originalname;
+    const [fileName, fileExtension] = originalFileName.split('.');
+    const outputPath = path.join(
+      __dirname,
+      '../output',
+      `${fileName}.${fileExtension}`,
+    );
+    fs.writeFileSync(outputPath, inputBuffer);
+    await convertToM4a(outputPath, {bitrate: '64k'});
+    fs.unlinkSync(outputPath);
 
     const result = await db.one(
       'INSERT INTO audios(title, file) VALUES($1, $2) RETURNING id',
-      [title, file],
+      [title, outputPath],
     );
-
-    const inputPath = path.resolve(__dirname, '../input/' + file);
-    const outputPath = path.resolve(
-      __dirname,
-      '../output/' + result.id + '.m4a',
-    );
-    await convertToM4A(inputPath, outputPath);
 
     res
       .status(201)

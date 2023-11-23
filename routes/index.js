@@ -2,11 +2,15 @@ const express = require('express');
 const audioController = require('../controllers/audioController');
 const artistController = require('../controllers/artistController');
 const albumController = require('../controllers/albumController');
+const multer = require('multer');
+
+const storage = multer.memoryStorage();
+const upload = multer({storage: storage});
 
 const router = express.Router();
 
 // Routes pour les audios
-router.post('/audio', audioController.createAudio);
+router.post('/audio', upload.single('audioFile'), audioController.createAudio);
 router.get('/audios', audioController.getAudios);
 router.get('/audios/:audioId', audioController.getAudio);
 router.put('/audios/:audioId', audioController.updateAudio);
