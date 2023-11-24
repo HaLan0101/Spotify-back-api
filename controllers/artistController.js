@@ -27,7 +27,6 @@ async function getArtists(req, res) {
 async function getArtist(req, res) {
   try {
     const {artistId} = req.params;
-
     const artist = await db.oneOrNone('SELECT * FROM artists WHERE id = $1', [
       artistId,
     ]);
