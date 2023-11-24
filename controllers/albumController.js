@@ -79,12 +79,13 @@ export async function updateAlbum(req, res) {
 }
 
 export async function addAudioToAlbum(req, res) {
-  const {albumId, audioId} = req.params;
+  const {albumId} = req.params;
+  const {audio_ids} = req.body;
 
   try {
     await db.tx(async t => {
       const audio = await t.oneOrNone('SELECT * FROM audios WHERE id = $1', [
-        audioId,
+        audio_ids,
       ]);
       if (!audio) {
         res.status(404).json({error: 'Audio not found'});
@@ -99,17 +100,17 @@ export async function addAudioToAlbum(req, res) {
       }
       const audioExistsInAlbum = await t.oneOrNone(
         'SELECT id FROM albums WHERE id = $1 AND $2 = ANY(audio_ids)',
-        [albumId, audioId],
+        [albumId, audio_ids],
       );
 
       if (!audioExistsInAlbum) {
         await t.none('UPDATE audios SET album_id = $1 WHERE id = $2', [
           albumId,
-          audioId,
+          audio_ids,
         ]);
         await t.none(
           'UPDATE albums SET audio_ids = array_append(audio_ids, $1) WHERE id = $2',
-          [audioId, albumId],
+          [audio_ids, albumId],
         );
       }
     });

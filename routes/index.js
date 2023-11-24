@@ -40,7 +40,7 @@ router.delete('/audios/:audioId', deleteAudio);
 router.post('/artist', createArtist);
 router.get('/artists', getArtists);
 router.get('/artists/:artistId', getArtist);
-router.post('/artists/addAlbum/:artistId/:albumId', addAlbumToArtist);
+router.post('/artists/addAlbum/:artistId', addAlbumToArtist);
 router.delete('/artists/:artistId', deleteArtist);
 router.put('/artists/:artistId', updateArtist);
 
@@ -50,6 +50,6 @@ router.get('/albums', getAlbums);
 router.get('/albums/:albumId', getAlbum);
 router.delete('/albums/:albumId', deleteAlbum);
 router.put('/albums/:albumId', updateAlbum);
-router.post('/albums/addAudio/:albumId/:audioId', addAudioToAlbum);
+router.post('/albums/addAudio/:albumId', addAudioToAlbum);
 
 module.exports = router;
