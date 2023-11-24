@@ -18,15 +18,11 @@ export async function createAudio(req, res) {
     const mimeType = audioFile.mimetype;
     const originalFileName = audioFile.originalname;
     const [fileName, fileExtension] = originalFileName.split('.');
-    const outputPath = path.join(
-      __dirname,
-      '../output',
-      `${fileName}.${fileExtension}`,
-    );
+    const outputPath = path.join(__dirname, `${fileName}.${fileExtension}`);
     fs.writeFileSync(outputPath, inputBuffer);
     await convertToM4a(outputPath, {bitrate: '64k'});
     fs.unlinkSync(outputPath);
-    const outputPathM4a = path.join(__dirname, '../output', `${fileName}.m4a`);
+    const outputPathM4a = path.join(__dirname, `${fileName}.m4a`);
     const fileBuffer = fs.readFileSync(outputPathM4a);
     const urlFile = await uploadFile(fileBuffer, fileName, mimeType);
     const url = urlFile.toString();
