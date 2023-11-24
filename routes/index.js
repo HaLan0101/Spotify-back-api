@@ -3,6 +3,7 @@ const audioController = require('../controllers/audioController');
 const artistController = require('../controllers/artistController');
 const albumController = require('../controllers/albumController');
 const multer = require('multer');
+const cors = require('cors');
 
 const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
