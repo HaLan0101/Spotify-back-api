@@ -1,6 +1,6 @@
-const db = require('../db');
+import db from '../db';
 
-async function createAlbum(req, res) {
+export async function createAlbum(req, res) {
   try {
     const {title, cover} = req.body;
 
@@ -18,7 +18,7 @@ async function createAlbum(req, res) {
   }
 }
 
-async function getAlbums(req, res) {
+export async function getAlbums(req, res) {
   try {
     const albums = await db.any('SELECT * FROM albums');
     res.status(200).json(albums);
@@ -27,7 +27,7 @@ async function getAlbums(req, res) {
   }
 }
 
-async function getAlbum(req, res) {
+export async function getAlbum(req, res) {
   try {
     const {albumId} = req.params;
 
@@ -45,7 +45,7 @@ async function getAlbum(req, res) {
   }
 }
 
-async function deleteAlbum(req, res) {
+export async function deleteAlbum(req, res) {
   try {
     const {albumId} = req.params;
 
@@ -61,7 +61,7 @@ async function deleteAlbum(req, res) {
   }
 }
 
-async function updateAlbum(req, res) {
+export async function updateAlbum(req, res) {
   try {
     const {albumId} = req.params;
     const {title, cover} = req.body;
@@ -78,7 +78,7 @@ async function updateAlbum(req, res) {
   }
 }
 
-async function addAudioToAlbum(req, res) {
+export async function addAudioToAlbum(req, res) {
   const {albumId, audioId} = req.params;
 
   try {
@@ -120,12 +120,3 @@ async function addAudioToAlbum(req, res) {
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
-
-module.exports = {
-  createAlbum,
-  getAlbums,
-  getAlbum,
-  deleteAlbum,
-  updateAlbum,
-  addAudioToAlbum,
-};

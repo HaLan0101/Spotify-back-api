@@ -1,9 +1,9 @@
-const ffmpeg = require('fluent-ffmpeg');
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+import ffmpeg from 'fluent-ffmpeg';
+import ffmpegPath from '@ffmpeg-installer/ffmpeg';
 
-function convertToM4a(filePath, options = {}) {
+export function convertToM4a(filePath, options = {}) {
   return new Promise((resolve, reject) => {
-    ffmpeg.setFfmpegPath(ffmpegPath);
+    ffmpeg.setFfmpegPath(ffmpegPath.path);
     ffmpeg(filePath)
       .audioCodec('aac')
       .audioBitrate(options.bitrate || '128k')
@@ -18,4 +18,3 @@ function convertToM4a(filePath, options = {}) {
       .save(filePath.replace(/\..+$/, '.m4a'));
   });
 }
-module.exports = {convertToM4a};

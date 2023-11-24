@@ -1,9 +1,10 @@
-const db = require('../db');
-const path = require('path');
-const fs = require('fs');
-const {convertToM4a} = require('../scripts/converter');
+import db from '../db';
+import path from 'path';
+import fs from 'fs';
+import {convertToM4a} from '../scripts/converter';
+import {uploadFile} from '../scripts/firebase';
 
-async function createAudio(req, res) {
+export async function createAudio(req, res) {
   try {
     const {title} = req.body;
     const audioFile = req.file;
@@ -14,6 +15,7 @@ async function createAudio(req, res) {
     }
     const inputBuffer = audioFile.buffer;
 
+    const mimeType = audioFile.mimetype;
     const originalFileName = audioFile.originalname;
     const [fileName, fileExtension] = originalFileName.split('.');
     const outputPath = path.join(
@@ -24,10 +26,14 @@ async function createAudio(req, res) {
     fs.writeFileSync(outputPath, inputBuffer);
     await convertToM4a(outputPath, {bitrate: '64k'});
     fs.unlinkSync(outputPath);
-
+    const outputPathM4a = path.join(__dirname, '../output', `${fileName}.m4a`);
+    const fileBuffer = fs.readFileSync(outputPathM4a);
+    const urlFile = await uploadFile(fileBuffer, fileName, mimeType);
+    const url = urlFile.toString();
+    fs.unlinkSync(outputPathM4a);
     const result = await db.one(
       'INSERT INTO audios(title, file) VALUES($1, $2) RETURNING id',
-      [title, outputPath],
+      [title, url],
     );
 
     res
@@ -39,7 +45,7 @@ async function createAudio(req, res) {
   }
 }
 
-async function getAudios(req, res) {
+export async function getAudios(req, res) {
   try {
     const audios = await db.any('SELECT * FROM audios');
     res.status(200).json(audios);
@@ -48,7 +54,7 @@ async function getAudios(req, res) {
   }
 }
 
-async function getAudio(req, res) {
+export async function getAudio(req, res) {
   try {
     const {audioId} = req.params;
 
@@ -66,7 +72,7 @@ async function getAudio(req, res) {
   }
 }
 
-async function updateAudio(req, res) {
+export async function updateAudio(req, res) {
   try {
     const {audioId} = req.params;
     const {title} = req.body;
@@ -82,7 +88,7 @@ async function updateAudio(req, res) {
   }
 }
 
-async function deleteAudio(req, res) {
+export async function deleteAudio(req, res) {
   const {audioId} = req.params;
 
   try {
@@ -100,11 +106,3 @@ async function deleteAudio(req, res) {
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
-
-module.exports = {
-  createAudio,
-  getAudios,
-  getAudio,
-  updateAudio,
-  deleteAudio,
-};

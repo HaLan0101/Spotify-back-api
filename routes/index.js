@@ -1,8 +1,28 @@
-const express = require('express');
-const audioController = require('../controllers/audioController');
-const artistController = require('../controllers/artistController');
-const albumController = require('../controllers/albumController');
-const multer = require('multer');
+import express from 'express';
+import {
+  createAudio,
+  getAudios,
+  getAudio,
+  updateAudio,
+  deleteAudio,
+} from '../controllers/audioController';
+import {
+  createArtist,
+  getArtists,
+  getArtist,
+  addAlbumToArtist,
+  deleteArtist,
+  updateArtist,
+} from '../controllers/artistController';
+import {
+  createAlbum,
+  getAlbums,
+  getAlbum,
+  deleteAlbum,
+  updateAlbum,
+  addAudioToAlbum,
+} from '../controllers/albumController';
+import multer from 'multer';
 
 const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
@@ -10,32 +30,26 @@ const upload = multer({storage: storage});
 const router = express.Router();
 
 // Routes pour les audios
-router.post('/audio', upload.single('audioFile'), audioController.createAudio);
-router.get('/audios', audioController.getAudios);
-router.get('/audios/:audioId', audioController.getAudio);
-router.put('/audios/:audioId', audioController.updateAudio);
-router.delete('/audios/:audioId', audioController.deleteAudio);
+router.post('/audio', upload.single('audioFile'), createAudio);
+router.get('/audios', getAudios);
+router.get('/audios/:audioId', getAudio);
+router.put('/audios/:audioId', updateAudio);
+router.delete('/audios/:audioId', deleteAudio);
 
 // Routes pour les artistes
-router.post('/artist', artistController.createArtist);
-router.get('/artists', artistController.getArtists);
-router.get('/artists/:artistId', artistController.getArtist);
-router.post(
-  '/artists/addAlbum/:artistId/:albumId',
-  artistController.addAlbumToArtist,
-);
-router.delete('/artists/:artistId', artistController.deleteArtist);
-router.put('/artists/:artistId', artistController.updateArtist);
+router.post('/artist', createArtist);
+router.get('/artists', getArtists);
+router.get('/artists/:artistId', getArtist);
+router.post('/artists/addAlbum/:artistId/:albumId', addAlbumToArtist);
+router.delete('/artists/:artistId', deleteArtist);
+router.put('/artists/:artistId', updateArtist);
 
 // Routes pour les albums
-router.post('/album', albumController.createAlbum);
-router.get('/albums', albumController.getAlbums);
-router.get('/albums/:albumId', albumController.getAlbum);
-router.delete('/albums/:albumId', albumController.deleteAlbum);
-router.put('/albums/:albumId', albumController.updateAlbum);
-router.post(
-  '/albums/addAudio/:albumId/:audioId',
-  albumController.addAudioToAlbum,
-);
+router.post('/album', createAlbum);
+router.get('/albums', getAlbums);
+router.get('/albums/:albumId', getAlbum);
+router.delete('/albums/:albumId', deleteAlbum);
+router.put('/albums/:albumId', updateAlbum);
+router.post('/albums/addAudio/:albumId/:audioId', addAudioToAlbum);
 
 module.exports = router;

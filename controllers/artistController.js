@@ -1,6 +1,6 @@
-const db = require('../db');
+import db from '../db';
 
-async function createArtist(req, res) {
+export async function createArtist(req, res) {
   try {
     const {name} = req.body;
     const result = await db.one(
@@ -15,7 +15,7 @@ async function createArtist(req, res) {
   }
 }
 
-async function getArtists(req, res) {
+export async function getArtists(req, res) {
   try {
     const artists = await db.any('SELECT * FROM artists');
     res.status(200).json(artists);
@@ -24,7 +24,7 @@ async function getArtists(req, res) {
   }
 }
 
-async function getArtist(req, res) {
+export async function getArtist(req, res) {
   try {
     const {artistId} = req.params;
 
@@ -42,7 +42,7 @@ async function getArtist(req, res) {
   }
 }
 
-async function deleteArtist(req, res) {
+export async function deleteArtist(req, res) {
   const artistId = req.params.artistId;
 
   try {
@@ -69,7 +69,7 @@ async function deleteArtist(req, res) {
   }
 }
 
-async function updateArtist(req, res) {
+export async function updateArtist(req, res) {
   try {
     const {artistId} = req.params;
     const {name} = req.body;
@@ -84,7 +84,7 @@ async function updateArtist(req, res) {
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
-async function addAlbumToArtist(req, res) {
+export async function addAlbumToArtist(req, res) {
   const {artistId, albumId} = req.params;
 
   try {
@@ -126,12 +126,3 @@ async function addAlbumToArtist(req, res) {
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
-
-module.exports = {
-  createArtist,
-  getArtists,
-  getArtist,
-  deleteArtist,
-  updateArtist,
-  addAlbumToArtist,
-};
