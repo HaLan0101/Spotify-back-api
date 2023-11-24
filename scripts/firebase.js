@@ -24,6 +24,20 @@ export async function uploadFile(file, filename, mimetype) {
   const downloadURLString = downloadURL.toString();
   return downloadURLString;
 }
+
+export async function uploadImage(file, filename, mimetype) {
+  const dateTime = giveCurrentDateTime();
+
+  const storageRef = ref(storage, `image/${filename + dateTime}`);
+
+  const metadata = {
+    contentType: mimetype,
+  };
+  const snapshot = await uploadBytesResumable(storageRef, file, metadata);
+  const downloadURL = await getDownloadURL(snapshot.ref);
+  const downloadURLString = downloadURL.toString();
+  return downloadURLString;
+}
 const giveCurrentDateTime = () => {
   const today = new Date();
   const date =

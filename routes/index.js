@@ -45,7 +45,7 @@ router.delete('/artists/:artistId', deleteArtist);
 router.put('/artists/:artistId', updateArtist);
 
 // Routes pour les albums
-router.post('/album', createAlbum);
+router.post('/album', upload.single('imageFile'), createAlbum);
 router.get('/albums', getAlbums);
 router.get('/albums/:albumId', getAlbum);
 router.delete('/albums/:albumId', deleteAlbum);

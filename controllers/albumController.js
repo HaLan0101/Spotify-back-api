@@ -1,12 +1,26 @@
 import db from '../db';
+import {uploadImage} from '../scripts/firebase';
 
 export async function createAlbum(req, res) {
   try {
-    const {title, cover} = req.body;
+    const {title} = req.body;
+    const imageFile = req.file;
+
+    if (!imageFile) {
+      res.status(400).json({error: 'No image file uploaded'});
+      return;
+    }
+    const inputBuffer = imageFile.buffer;
+    const mimeType = imageFile.mimetype;
+    const originalFileName = imageFile.originalname;
+    // eslint-disable-next-line no-unused-vars
+    const [fileName, fileExtension] = originalFileName.split('.');
+    const urlFile = await uploadImage(inputBuffer, fileName, mimeType);
+    const url = urlFile.toString();
 
     const result = await db.one(
       'INSERT INTO albums(title, cover) VALUES($1, $2) RETURNING id',
-      [title, cover],
+      [title, url],
     );
 
     res
