@@ -102,3 +102,16 @@ export async function deleteAudio(req, res) {
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
+
+export async function getAudiosWithoutAnyAlbum(req, res) {
+  try {
+    const audiosWithoutAlbum = await db.any(
+      'SELECT * FROM audios WHERE album_id IS NULL',
+    );
+
+    res.status(200).json(audiosWithoutAlbum);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}

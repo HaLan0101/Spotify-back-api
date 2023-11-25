@@ -126,3 +126,40 @@ export async function addAlbumToArtist(req, res) {
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
+
+export async function deleteAlbumFromArtist(req, res) {
+  const {artistId} = req.params;
+  const {album_ids} = req.body;
+
+  try {
+    const artist = await db.oneOrNone('SELECT * FROM artists WHERE id = $1', [
+      artistId,
+    ]);
+    if (!artist) {
+      res.status(404).json({error: 'Artist not found'});
+      return;
+    }
+
+    const album = await db.oneOrNone('SELECT * FROM albums WHERE id = $1', [
+      album_ids,
+    ]);
+    if (!album) {
+      res.status(404).json({error: 'Album not found'});
+      return;
+    }
+
+    await db.none(
+      'UPDATE artists SET album_ids = array_remove(album_ids, $1) WHERE id = $2',
+      [album_ids, artistId],
+    );
+
+    await db.none('UPDATE albums SET artist_id = NULL WHERE id = $1', [
+      album_ids,
+    ]);
+
+    res.status(200).json({message: 'Album removed from artist successfully'});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}

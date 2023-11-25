@@ -78,16 +78,53 @@ export async function deleteAlbum(req, res) {
 export async function updateAlbum(req, res) {
   try {
     const {albumId} = req.params;
-    const {title, cover} = req.body;
+    const imageFile = req.file;
+    const {title} = req.body;
 
-    await db.none('UPDATE albums SET title = $1, cover = $2 WHERE id = $3', [
-      title,
-      cover,
-      albumId,
-    ]);
+    if (!imageFile && !title) {
+      res
+        .status(400)
+        .json({error: 'Title or Image is required for the update'});
+      return;
+    }
 
-    res.status(200).json({message: 'Album updated successfully'});
+    let url;
+    if (imageFile) {
+      console.log('coucou');
+      const inputBuffer = imageFile.buffer;
+      const mimeType = imageFile.mimetype;
+      const originalFileName = imageFile.originalname;
+      // eslint-disable-next-line no-unused-vars
+      const [fileName, fileExtension] = originalFileName.split('.');
+      const urlFile = await uploadImage(inputBuffer, fileName, mimeType);
+      url = urlFile.toString();
+    }
+
+    if (imageFile && !title) {
+      console.log('coucou1');
+      await db.none('UPDATE albums SET cover = $1 WHERE id = $2', [
+        url,
+        albumId,
+      ]);
+      res.status(200).json({message: 'Image of album updated successfully'});
+    } else if (!imageFile && title) {
+      console.log('coucou2');
+      await db.none('UPDATE albums SET title = $1 WHERE id = $2', [
+        title,
+        albumId,
+      ]);
+      res.status(200).json({message: 'Title of album updated successfully'});
+    } else {
+      console.log('coucou3');
+      await db.none('UPDATE albums SET title = $1, cover = $2 WHERE id = $3', [
+        title,
+        url,
+        albumId,
+      ]);
+      res.status(200).json({message: 'Album updated successfully'});
+    }
   } catch (error) {
+    console.error(error);
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
@@ -130,6 +167,55 @@ export async function addAudioToAlbum(req, res) {
     });
 
     res.status(200).json({message: 'Audio added to album successfully'});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}
+export async function deleteAudioFromAlbum(req, res) {
+  const {albumId} = req.params;
+  const {audio_ids} = req.body;
+
+  try {
+    const album = await db.oneOrNone('SELECT * FROM albums WHERE id = $1', [
+      albumId,
+    ]);
+    if (!album) {
+      res.status(404).json({error: 'Album not found'});
+      return;
+    }
+
+    const audio = await db.oneOrNone('SELECT * FROM audios WHERE id = $1', [
+      audio_ids,
+    ]);
+    if (!audio) {
+      res.status(404).json({error: 'Audio not found'});
+      return;
+    }
+
+    await db.none(
+      'UPDATE albums SET audio_ids = array_remove(audio_ids, $1) WHERE id = $2',
+      [audio_ids, albumId],
+    );
+
+    await db.none('UPDATE audios SET album_id = NULL WHERE id = $1', [
+      audio_ids,
+    ]);
+
+    res.status(200).json({message: 'Audio removed from album successfully'});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}
+
+export async function getAlbumsWithoutAnyArtist(req, res) {
+  try {
+    const albumsWithoutArtist = await db.any(
+      'SELECT * FROM albums WHERE artist_id IS NULL',
+    );
+
+    res.status(200).json(albumsWithoutArtist);
   } catch (error) {
     console.error(error);
     res.status(500).json({error: 'Internal Server Error'});
