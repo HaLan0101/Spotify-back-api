@@ -1,4 +1,5 @@
 import db from '../db';
+import client from '../redis';
 import {uploadImage} from '../scripts/firebase';
 
 export async function createAlbum(req, res) {
@@ -22,7 +23,8 @@ export async function createAlbum(req, res) {
       'INSERT INTO albums(title, cover) VALUES($1, $2) RETURNING id',
       [title, url],
     );
-
+    const cacheKey = 'albums';
+    client.del(cacheKey);
     res
       .status(201)
       .json({message: 'Album created successfully', albumId: result.id});
@@ -34,9 +36,21 @@ export async function createAlbum(req, res) {
 
 export async function getAlbums(req, res) {
   try {
-    const albums = await db.any('SELECT * FROM albums');
-    res.status(200).json(albums);
+    const cacheKey = 'albums';
+    client.get(cacheKey, async (err, cachedData) => {
+      if (err) throw err;
+
+      if (cachedData) {
+        const albums = JSON.parse(cachedData);
+        res.status(200).json(albums);
+      } else {
+        const albums = await db.any('SELECT * FROM albums');
+        client.setex(cacheKey, 3600, JSON.stringify(albums));
+        res.status(200).json(albums);
+      }
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
@@ -44,17 +58,32 @@ export async function getAlbums(req, res) {
 export async function getAlbum(req, res) {
   try {
     const {albumId} = req.params;
+    const cacheKey = `album_${albumId}`;
 
-    const album = await db.oneOrNone('SELECT * FROM albums WHERE id = $1', [
-      albumId,
-    ]);
+    client.get(cacheKey, async (error, cachedAlbum) => {
+      if (error) {
+        console.error(error);
+        res.status(500).json({error: 'Internal Server Error'});
+        return;
+      }
 
-    if (album) {
-      res.status(200).json(album);
-    } else {
-      res.status(404).json({error: 'Album not found'});
-    }
+      if (cachedAlbum) {
+        res.status(200).json(JSON.parse(cachedAlbum));
+      } else {
+        const album = await db.oneOrNone('SELECT * FROM albums WHERE id = $1', [
+          albumId,
+        ]);
+
+        if (album) {
+          client.setex(cacheKey, 3600, JSON.stringify(album));
+          res.status(200).json(album);
+        } else {
+          res.status(404).json({error: 'Album not found'});
+        }
+      }
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
@@ -66,6 +95,11 @@ export async function deleteAlbum(req, res) {
     await db.none('DELETE FROM audios WHERE album_id = $1', [albumId]);
 
     await db.none('DELETE FROM albums WHERE id = $1', [albumId]);
+
+    const cacheKeyOne = `album_${albumId}`;
+    const cacheKey = 'albums';
+    client.del(cacheKey);
+    client.del(cacheKeyOne);
 
     res
       .status(200)
@@ -90,7 +124,6 @@ export async function updateAlbum(req, res) {
 
     let url;
     if (imageFile) {
-      console.log('coucou');
       const inputBuffer = imageFile.buffer;
       const mimeType = imageFile.mimetype;
       const originalFileName = imageFile.originalname;
@@ -101,21 +134,18 @@ export async function updateAlbum(req, res) {
     }
 
     if (imageFile && !title) {
-      console.log('coucou1');
       await db.none('UPDATE albums SET cover = $1 WHERE id = $2', [
         url,
         albumId,
       ]);
       res.status(200).json({message: 'Image of album updated successfully'});
     } else if (!imageFile && title) {
-      console.log('coucou2');
       await db.none('UPDATE albums SET title = $1 WHERE id = $2', [
         title,
         albumId,
       ]);
       res.status(200).json({message: 'Title of album updated successfully'});
     } else {
-      console.log('coucou3');
       await db.none('UPDATE albums SET title = $1, cover = $2 WHERE id = $3', [
         title,
         url,

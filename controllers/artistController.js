@@ -1,5 +1,5 @@
 import db from '../db';
-
+import client from '../redis';
 export async function createArtist(req, res) {
   try {
     const {name} = req.body;
@@ -7,6 +7,8 @@ export async function createArtist(req, res) {
       'INSERT INTO artists(name) VALUES($1) RETURNING id',
       [name],
     );
+    const cacheKey = 'artists';
+    client.del(cacheKey);
     res
       .status(201)
       .json({message: 'Artist created successfully', artistId: result.id});
@@ -17,9 +19,21 @@ export async function createArtist(req, res) {
 
 export async function getArtists(req, res) {
   try {
-    const artists = await db.any('SELECT * FROM artists');
-    res.status(200).json(artists);
+    const cacheKey = 'artists';
+    client.get(cacheKey, async (err, cachedData) => {
+      if (err) throw err;
+
+      if (cachedData) {
+        const artists = JSON.parse(cachedData);
+        res.status(200).json(artists);
+      } else {
+        const artists = await db.any('SELECT * FROM artists');
+        client.setex(cacheKey, 3600, JSON.stringify(artists));
+        res.status(200).json(artists);
+      }
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
@@ -27,16 +41,33 @@ export async function getArtists(req, res) {
 export async function getArtist(req, res) {
   try {
     const {artistId} = req.params;
-    const artist = await db.oneOrNone('SELECT * FROM artists WHERE id = $1', [
-      artistId,
-    ]);
+    const cacheKey = `artist_${artistId}`;
 
-    if (artist) {
-      res.status(200).json(artist);
-    } else {
-      res.status(404).json({error: 'Artist not found'});
-    }
+    client.get(cacheKey, async (error, cachedArtist) => {
+      if (error) {
+        console.error(error);
+        res.status(500).json({error: 'Internal Server Error'});
+        return;
+      }
+
+      if (cachedArtist) {
+        res.status(200).json(JSON.parse(cachedArtist));
+      } else {
+        const artist = await db.oneOrNone(
+          'SELECT * FROM artists WHERE id = $1',
+          [artistId],
+        );
+
+        if (artist) {
+          client.setex(cacheKey, 3600, JSON.stringify(artist));
+          res.status(200).json(artist);
+        } else {
+          res.status(404).json({error: 'Artist not found'});
+        }
+      }
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
@@ -58,6 +89,11 @@ export async function deleteArtist(req, res) {
 
       await t.none('DELETE FROM artists WHERE id = $1', [artistId]);
     });
+
+    const cacheKeyOne = `artist_${artistId}`;
+    const cacheKey = 'artists';
+    client.del(cacheKey);
+    client.del(cacheKeyOne);
 
     res
       .status(200)

@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import {convertToM4a} from '../scripts/converter';
 import {uploadFile} from '../scripts/firebase';
+import client from '../redis';
 
 export async function createAudio(req, res) {
   try {
@@ -31,7 +32,8 @@ export async function createAudio(req, res) {
       'INSERT INTO audios(title, file) VALUES($1, $2) RETURNING id',
       [title, url],
     );
-
+    const cacheKey = 'audios';
+    client.del(cacheKey);
     res
       .status(201)
       .json({message: 'Audio uploaded successfully', audioId: result.id});
@@ -43,9 +45,21 @@ export async function createAudio(req, res) {
 
 export async function getAudios(req, res) {
   try {
-    const audios = await db.any('SELECT * FROM audios');
-    res.status(200).json(audios);
+    const cacheKey = 'audios';
+    client.get(cacheKey, async (err, cachedData) => {
+      if (err) throw err;
+
+      if (cachedData) {
+        const audios = JSON.parse(cachedData);
+        res.status(200).json(audios);
+      } else {
+        const audios = await db.any('SELECT * FROM audios');
+        client.setex(cacheKey, 3600, JSON.stringify(audios));
+        res.status(200).json(audios);
+      }
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
@@ -53,17 +67,32 @@ export async function getAudios(req, res) {
 export async function getAudio(req, res) {
   try {
     const {audioId} = req.params;
+    const cacheKey = `audio_${audioId}`;
 
-    const audio = await db.oneOrNone('SELECT * FROM audios WHERE id = $1', [
-      audioId,
-    ]);
+    client.get(cacheKey, async (error, cachedAudio) => {
+      if (error) {
+        console.error(error);
+        res.status(500).json({error: 'Internal Server Error'});
+        return;
+      }
 
-    if (audio) {
-      res.status(200).json(audio);
-    } else {
-      res.status(404).json({error: 'Audio not found'});
-    }
+      if (cachedAudio) {
+        res.status(200).json(JSON.parse(cachedAudio));
+      } else {
+        const audio = await db.oneOrNone('SELECT * FROM audios WHERE id = $1', [
+          audioId,
+        ]);
+
+        if (audio) {
+          client.setex(cacheKey, 3600, JSON.stringify(audio));
+          res.status(200).json(audio);
+        } else {
+          res.status(404).json({error: 'Audio not found'});
+        }
+      }
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
@@ -95,6 +124,10 @@ export async function deleteAudio(req, res) {
         [audioId],
       );
     });
+    const cacheKeyOne = `audio_${audioId}`;
+    const cacheKey = 'audios';
+    client.del(cacheKey);
+    client.del(cacheKeyOne);
 
     res.status(200).json({message: 'Audio deleted successfully'});
   } catch (error) {
