@@ -106,6 +106,10 @@ export async function updateAudio(req, res) {
       title,
       audioId,
     ]);
+    const cacheKeyOne = `audio_${audioId}`;
+    const cacheKey = 'audios';
+    client.del(cacheKey);
+    client.del(cacheKeyOne);
 
     res.status(200).json({message: 'Audio updated successfully'});
   } catch (error) {

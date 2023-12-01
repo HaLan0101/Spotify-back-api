@@ -113,6 +113,10 @@ export async function updateArtist(req, res) {
       name,
       artistId,
     ]);
+    const cacheKeyOne = `artist_${artistId}`;
+    const cacheKey = 'artists';
+    client.del(cacheKey);
+    client.del(cacheKeyOne);
 
     res.status(200).json({message: 'Artist updated successfully'});
   } catch (error) {

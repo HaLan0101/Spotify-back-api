@@ -138,12 +138,20 @@ export async function updateAlbum(req, res) {
         url,
         albumId,
       ]);
+      const cacheKeyOne = `album_${albumId}`;
+      const cacheKey = 'albums';
+      client.del(cacheKey);
+      client.del(cacheKeyOne);
       res.status(200).json({message: 'Image of album updated successfully'});
     } else if (!imageFile && title) {
       await db.none('UPDATE albums SET title = $1 WHERE id = $2', [
         title,
         albumId,
       ]);
+      const cacheKeyOne = `album_${albumId}`;
+      const cacheKey = 'albums';
+      client.del(cacheKey);
+      client.del(cacheKeyOne);
       res.status(200).json({message: 'Title of album updated successfully'});
     } else {
       await db.none('UPDATE albums SET title = $1, cover = $2 WHERE id = $3', [
@@ -151,6 +159,10 @@ export async function updateAlbum(req, res) {
         url,
         albumId,
       ]);
+      const cacheKeyOne = `album_${albumId}`;
+      const cacheKey = 'albums';
+      client.del(cacheKey);
+      client.del(cacheKeyOne);
       res.status(200).json({message: 'Album updated successfully'});
     }
   } catch (error) {
