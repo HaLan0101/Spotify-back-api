@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model albums {
+  id        Int      @id @default(autoincrement())
+  title     String   @db.VarChar(255)
+  cover     String   @db.VarChar(255)
+  artist    artists? @relation(fields: [artistId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  audios    audios[]
+  artistId  Int?
+}
+
+model artists {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(255)
+  albums    albums[]
+  audios    audios[]
+}
+
+model audios {
+  id       Int     @id @default(autoincrement())
+  title    String  @db.VarChar(255)
+  file     String  @db.VarChar(255)
+  album    albums? @relation(fields: [albumId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  artist   artists? @relation(fields: [artistId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  albumId  Int?
+  artistId Int?
+}
