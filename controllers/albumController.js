@@ -1,5 +1,5 @@
 import client from '../redis';
-import {uploadImage} from '../scripts/firebase';
+import {uploadImage} from '../scripts/aws';
 import {PrismaClient} from '@prisma/client';
 const prisma = new PrismaClient();
 
@@ -7,25 +7,23 @@ export async function createAlbum(req, res) {
   try {
     const {title, artistId} = req.body;
     const imageFile = req.file;
-    const inputBuffer = imageFile.buffer;
-    const mimeType = imageFile.mimetype;
-    const originalFileName = imageFile.originalname;
-    // eslint-disable-next-line no-unused-vars
-    const [fileName, fileExtension] = originalFileName.split('.');
-    const urlFile = await uploadImage(inputBuffer, fileName, mimeType);
-    const cover = urlFile.toString();
     if (!title) {
       return res.status(400).json({error: 'Title is required for the album'});
     }
     if (!imageFile) {
       return res.status(400).json({error: 'No image file uploaded'});
     }
-
+    const inputBuffer = imageFile.buffer;
+    const mimeType = imageFile.mimetype;
+    const originalFileName = imageFile.originalname;
+    // eslint-disable-next-line no-unused-vars
+    const [fileName, fileExtension] = originalFileName.split('.');
+    const url = await uploadImage(inputBuffer, fileName, mimeType);
     const album = await prisma.albums.create({
       data: {
         title,
         artistId: parseInt(artistId),
-        cover,
+        cover: url,
       },
     });
     const cacheKey = 'albums';
@@ -161,7 +159,7 @@ export async function updateAlbum(req, res) {
       // eslint-disable-next-line no-unused-vars
       const [fileName, fileExtension] = originalFileName.split('.');
       const urlFile = await uploadImage(inputBuffer, fileName, mimeType);
-      cover = urlFile.toString();
+      cover = urlFile;
     }
     const album = await prisma.albums.update({
       where: {id: parseInt(albumId)},

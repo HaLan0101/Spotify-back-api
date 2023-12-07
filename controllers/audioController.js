@@ -1,9 +1,9 @@
 import path from 'path';
 import fs from 'fs';
 import {convertToM4a} from '../scripts/converter';
-import {uploadFile} from '../scripts/firebase';
 import client from '../redis';
 import {PrismaClient} from '@prisma/client';
+import {uploadFile} from '../scripts/aws';
 const prisma = new PrismaClient();
 export async function createAudio(req, res) {
   try {
@@ -27,8 +27,7 @@ export async function createAudio(req, res) {
     fs.unlinkSync(outputPath);
     const outputPathM4a = path.join(__dirname, `${fileName}.m4a`);
     const fileBuffer = fs.readFileSync(outputPathM4a);
-    const urlFile = await uploadFile(fileBuffer, fileName, mimeType);
-    const url = urlFile.toString();
+    const url = await uploadFile(fileBuffer, fileName, mimeType);
     fs.unlinkSync(outputPathM4a);
 
     const album = await prisma.albums.findUnique({
@@ -186,7 +185,7 @@ export async function updateAudio(req, res) {
       const outputPathM4a = path.join(__dirname, `${fileName}.m4a`);
       const fileBuffer = fs.readFileSync(outputPathM4a);
       const urlFile = await uploadFile(fileBuffer, fileName, mimeType);
-      url = urlFile.toString();
+      url = urlFile;
       fs.unlinkSync(outputPathM4a);
     }
     const audio = await prisma.audios.update({
