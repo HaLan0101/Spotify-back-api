@@ -122,9 +122,16 @@ export async function deleteArtist(req, res) {
     client.del(cacheKeyAlbums);
     client.del(cacheKeyAudios);
 
-    res.status(200).json({
-      message: 'Artist and associated albums/audios deleted successfully',
+    const artists = await prisma.artists.findMany({
+      include: {
+        albums: {
+          include: {
+            audios: true,
+          },
+        },
+      },
     });
+    res.status(200).json(artists);
   } catch (error) {
     console.error(error);
     res.status(500).json({error: 'Internal Server Error'});
@@ -162,7 +169,16 @@ export async function updateArtist(req, res) {
     client.del(cacheKeyOne);
     client.del(cacheKeyAlbums);
     client.del(cacheKeyAudios);
-    res.status(200).json({message: 'Artist updated successfully'});
+    const artists = await prisma.artists.findMany({
+      include: {
+        albums: {
+          include: {
+            audios: true,
+          },
+        },
+      },
+    });
+    res.status(200).json(artists);
   } catch (error) {
     console.error(error);
     res.status(500).json({error: 'Internal Server Error'});
