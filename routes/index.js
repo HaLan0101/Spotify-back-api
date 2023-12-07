@@ -31,7 +31,7 @@ const router = express.Router();
 router.post('/audio', upload.single('audioFile'), createAudio);
 router.get('/audios', getAudios);
 router.get('/audios/:audioId', getAudio);
-router.put('/audios/:audioId', updateAudio);
+router.put('/audios/:audioId', upload.single('audioFile'), updateAudio);
 router.delete('/audios/:audioId', deleteAudio);
 
 // Routes pour les artistes
