@@ -3,7 +3,8 @@
 - Express js
 - ES6 avec Babel
 - Eslint / prettier
-- Husky (quelque tests unitaire)
+- Husky
+- Quelques tests unitaires
 - BDD Postgresql
 - Conversion en utilisant ffmpeg
 - Sstème de cache avec Redis
