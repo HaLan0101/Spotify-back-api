@@ -13,4 +13,4 @@
 
 Bonus
 
-- Storage les fichiers avec AWS S3
+- Stockage des fichiers avec AWS S3
