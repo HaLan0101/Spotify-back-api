@@ -5,6 +5,11 @@ import {
   getAudio,
   updateAudio,
   deleteAudio,
+  playedAudio,
+  lastListenedAudios,
+  topListenedAudios,
+  countAudio,
+  countListenTotal,
 } from '../controllers/audioController';
 import {
   createArtist,
@@ -19,6 +24,7 @@ import {
   getAlbum,
   deleteAlbum,
   updateAlbum,
+  countAlbum,
 } from '../controllers/albumController';
 import multer from 'multer';
 
@@ -33,6 +39,11 @@ router.get('/audios', getAudios);
 router.get('/audios/:audioId', getAudio);
 router.put('/audios/:audioId', upload.single('audioFile'), updateAudio);
 router.delete('/audios/:audioId', deleteAudio);
+router.post('/playedAudio/:audioId', playedAudio);
+router.get('/topListenedAudios', topListenedAudios);
+router.get('/lastListenedAudios', lastListenedAudios);
+router.get('/countAudio', countAudio);
+router.get('/countListenTotal', countListenTotal);
 
 // Routes pour les artistes
 router.post('/artist', createArtist);
@@ -47,5 +58,6 @@ router.get('/albums', getAlbums);
 router.get('/albums/:albumId', getAlbum);
 router.delete('/albums/:albumId', deleteAlbum);
 router.put('/albums/:albumId', upload.single('imageFile'), updateAlbum);
+router.get('/countAlbum', countAlbum);
 
 export default router;

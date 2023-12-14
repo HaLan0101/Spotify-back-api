@@ -216,3 +216,92 @@ export async function updateAudio(req, res) {
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
+
+export async function playedAudio(req, res) {
+  try {
+    const {audioId} = req.params;
+    const audio = await prisma.audios.update({
+      where: {id: parseInt(audioId)},
+      data: {
+        lastListenedAt: new Date(),
+        listenCount: {
+          increment: 1,
+        },
+      },
+    });
+    const cacheKeyOne = `audio_${audioId}`;
+    const cacheKey = 'audios';
+    const cacheKeyAlbum = `album_${audio.albumId}`;
+    const cacheKeyAlbums = 'albums';
+    const cacheKeyArtist = `artist_${audio.artistId}`;
+    const cacheKeyArtists = 'artists';
+    client.del(cacheKey);
+    client.del(cacheKeyOne);
+    client.del(cacheKeyAlbum);
+    client.del(cacheKeyAlbums);
+    client.del(cacheKeyArtist);
+    client.del(cacheKeyArtists);
+    res.status(200).json({message: 'Audio marked as played'});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}
+
+export async function lastListenedAudios(req, res) {
+  try {
+    const lastListenedAudios = await prisma.audios.findMany({
+      orderBy: {lastListenedAt: 'desc'},
+      take: 20,
+    });
+
+    res.status(200).json(lastListenedAudios);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}
+
+export async function topListenedAudios(req, res) {
+  try {
+    const topAudios = await prisma.audios.findMany({
+      orderBy: {
+        listenCount: 'desc',
+      },
+      take: 10,
+    });
+
+    res.status(200).json(topAudios);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}
+
+export async function countAudio(req, res) {
+  try {
+    const totalAudioCount = await prisma.audios.count();
+
+    res.status(200).json({totalAudioCount});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}
+
+export async function countListenTotal(req, res) {
+  try {
+    const totalListenCount = await prisma.audios.aggregate({
+      _sum: {
+        listenCount: true,
+      },
+    });
+
+    res
+      .status(200)
+      .json({totalListenCount: totalListenCount._sum.listenCount || 0});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}
