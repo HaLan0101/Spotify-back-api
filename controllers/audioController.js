@@ -20,15 +20,22 @@ export async function createAudio(req, res) {
 
     const mimeType = audioFile.mimetype;
     const originalFileName = audioFile.originalname;
-    const [fileName, fileExtension] = originalFileName.split('.');
-    const outputPath = path.join(__dirname, `${fileName}.${fileExtension}`);
-    fs.writeFileSync(outputPath, inputBuffer);
-    await convertToM4a(outputPath, {bitrate: '64k'});
-    fs.unlinkSync(outputPath);
-    const outputPathM4a = path.join(__dirname, `${fileName}.m4a`);
-    const fileBuffer = fs.readFileSync(outputPathM4a);
-    const url = await uploadFile(fileBuffer, fileName, mimeType);
-    fs.unlinkSync(outputPathM4a);
+    const lastDotIndex = originalFileName.lastIndexOf('.');
+    const fileName = originalFileName.slice(0, lastDotIndex);
+    const fileExtension = originalFileName.slice(lastDotIndex + 1);
+    let url;
+    if (fileExtension === 'm4a' || fileExtension === 'wav') {
+      url = await uploadFile(inputBuffer, fileName, mimeType);
+    } else {
+      const outputPath = path.join(__dirname, `${fileName}.${fileExtension}`);
+      fs.writeFileSync(outputPath, inputBuffer);
+      await convertToM4a(outputPath, {bitrate: '64k'});
+      fs.unlinkSync(outputPath);
+      const outputPathM4a = path.join(__dirname, `${fileName}.m4a`);
+      const fileBuffer = fs.readFileSync(outputPathM4a);
+      url = await uploadFile(fileBuffer, fileName, mimeType);
+      fs.unlinkSync(outputPathM4a);
+    }
 
     const album = await prisma.albums.findUnique({
       where: {id: parseInt(albumId)},

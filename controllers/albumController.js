@@ -5,13 +5,16 @@ const prisma = new PrismaClient();
 
 export async function createAlbum(req, res) {
   try {
-    const {title, artistId} = req.body;
+    const {title, artistId, type} = req.body;
     const imageFile = req.file;
     if (!title) {
       return res.status(400).json({error: 'Title is required for the album'});
     }
     if (!imageFile) {
       return res.status(400).json({error: 'No image file uploaded'});
+    }
+    if (!type) {
+      return res.status(400).json({error: 'Type is required '});
     }
     const inputBuffer = imageFile.buffer;
     const mimeType = imageFile.mimetype;
@@ -24,6 +27,7 @@ export async function createAlbum(req, res) {
         title,
         artistId: parseInt(artistId),
         cover: url,
+        type,
       },
     });
     const cacheKey = 'albums';
@@ -143,12 +147,12 @@ export async function deleteAlbum(req, res) {
 export async function updateAlbum(req, res) {
   try {
     const {albumId} = req.params;
-    const {title} = req.body;
+    const {title, type} = req.body;
     const imageFile = req.file;
-    if (!imageFile && !title) {
+    if (!imageFile && !title && !type) {
       res
         .status(400)
-        .json({error: 'Title or image is required for the update'});
+        .json({error: 'Title or image or type is required for the update'});
       return;
     }
     let cover;
@@ -166,6 +170,7 @@ export async function updateAlbum(req, res) {
       data: {
         title: title,
         cover: cover,
+        type,
       },
       include: {
         audios: true,

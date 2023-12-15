@@ -27,7 +27,12 @@ export function uploadFile(file, filename, mimeType) {
       } else {
         const fileUrl = data.Location;
         const url = fileUrl.toString();
-        resolve(url);
+        const cloudFrontDomain = 'https://d3ozihag9834pq.cloudfront.net';
+        const cloudFrontUrl = url.replace(
+          'https://spotifybucket2023.s3.eu-west-3.amazonaws.com',
+          cloudFrontDomain,
+        );
+        resolve(cloudFrontUrl);
       }
     });
   });
@@ -51,7 +56,12 @@ export function uploadImage(file, filename, mimeType) {
       } else {
         const fileUrl = data.Location;
         const url = fileUrl.toString();
-        resolve(url);
+        const cloudFrontDomain = 'https://d3ozihag9834pq.cloudfront.net';
+        const cloudFrontUrl = url.replace(
+          'https://spotifybucket2023.s3.eu-west-3.amazonaws.com',
+          cloudFrontDomain,
+        );
+        resolve(cloudFrontUrl);
       }
     });
   });
