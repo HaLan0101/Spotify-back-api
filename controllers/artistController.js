@@ -44,6 +44,9 @@ export async function getArtists(req, res) {
               },
             },
           },
+          orderBy: {
+            id: 'desc',
+          },
         });
         client.setex(cacheKey, 3600, JSON.stringify(artists));
         res.status(200).json(artists);
@@ -130,6 +133,9 @@ export async function deleteArtist(req, res) {
           },
         },
       },
+      orderBy: {
+        id: 'desc',
+      },
     });
     res.status(200).json(artists);
   } catch (error) {
@@ -176,6 +182,9 @@ export async function updateArtist(req, res) {
             audios: true,
           },
         },
+      },
+      orderBy: {
+        id: 'desc',
       },
     });
     res.status(200).json(artists);

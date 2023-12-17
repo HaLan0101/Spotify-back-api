@@ -60,6 +60,9 @@ export async function getAlbums(req, res) {
             audios: true,
             artist: true,
           },
+          orderBy: {
+            id: 'desc',
+          },
         });
         client.setex(cacheKey, 3600, JSON.stringify(albums));
         res.status(200).json(albums);
@@ -136,6 +139,9 @@ export async function deleteAlbum(req, res) {
         audios: true,
         artist: true,
       },
+      orderBy: {
+        id: 'desc',
+      },
     });
     res.status(200).json(albums);
   } catch (error) {
@@ -195,6 +201,9 @@ export async function updateAlbum(req, res) {
       include: {
         audios: true,
         artist: true,
+      },
+      orderBy: {
+        id: 'desc',
       },
     });
     res.status(200).json(albums);
