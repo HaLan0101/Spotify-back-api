@@ -25,6 +25,7 @@ import {
   deleteAlbum,
   updateAlbum,
   countAlbum,
+  filterTypeAlbum,
 } from '../controllers/albumController';
 import {musicParser, extractFile} from '../controllers/fileController';
 import multer from 'multer';
@@ -60,6 +61,7 @@ router.get('/albums/:albumId', getAlbum);
 router.delete('/albums/:albumId', deleteAlbum);
 router.put('/albums/:albumId', upload.single('imageFile'), updateAlbum);
 router.get('/countAlbum', countAlbum);
+router.get('/filterTypeAlbum', filterTypeAlbum);
 
 // Routes pour les fichiers
 router.get('/musicParser', musicParser);

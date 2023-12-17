@@ -2,7 +2,76 @@ import client from '../redis';
 import {uploadImage} from '../scripts/aws';
 import {PrismaClient} from '@prisma/client';
 const prisma = new PrismaClient();
-
+const validTypes = [
+  'Jazz',
+  "Rock 'n' Roll",
+  'Country',
+  'Rock',
+  'Vocal jazz',
+  'Rock & Roll',
+  "Rock'N'Roll",
+  'Latin',
+  'Folk',
+  'Vocal Jazz',
+  'Cool Jazz',
+  'Singer/Folk rock',
+  'Pop',
+  'Ethnic',
+  'Soul Jazz',
+  'Soul',
+  'R&B',
+  'Bossa Nova',
+  'Folk rock',
+  'Christmas',
+  'Blues',
+  'Chanson',
+  'Garage Rock',
+  'Hard Bop',
+  'Classic Rock',
+  'Classic Folk Rock',
+  'Baroque Pop, Psychedelic Pop',
+  'Folk-Rock',
+  'Garage rock',
+  'Pop/Rock',
+  'Experimental rock',
+  'Folk/Rock',
+  'Psychedelic Rock',
+  'Pop soul',
+  'Psychadelic',
+  'World',
+  'Progressive Rock',
+  'Psychedelic Folk',
+  'Indian Classical',
+  'Soul, blues',
+  'Hard Rock',
+  'Blues rock',
+  'Bossa nova',
+  'Baroque Pop, Rock`n`Roll, 60s',
+  'Country rock',
+  'Jazz rock',
+  'Country Rock',
+  'Funk',
+  'Folk Rock',
+  'Instrumental Pop',
+  'Rythm and blues',
+  'Proto prog',
+  'Blues-Rock',
+  'Indian',
+  'Psychedelic',
+  'Proto punk',
+  'Rock, folk',
+  'A Cappella',
+  'Folk prog rock',
+  'Pop folk',
+  'Pop/Funk',
+  'Jazz vocals',
+  'Afrobeat',
+  'Glam Rock',
+  'Heavy Metal',
+  'unknown',
+  'Jazz-rock',
+  'Glam rock',
+];
 export async function createAlbum(req, res) {
   try {
     const {title, artistId, type} = req.body;
@@ -15,6 +84,10 @@ export async function createAlbum(req, res) {
     }
     if (!type) {
       return res.status(400).json({error: 'Type is required '});
+    }
+    if (!validTypes.includes(type)) {
+      res.status(400).json({error: 'Invalid album type'});
+      return;
     }
     const inputBuffer = imageFile.buffer;
     const mimeType = imageFile.mimetype;
@@ -161,6 +234,12 @@ export async function updateAlbum(req, res) {
         .json({error: 'Title or image or type is required for the update'});
       return;
     }
+    if (type) {
+      if (!validTypes.includes(type)) {
+        res.status(400).json({error: 'Invalid album type'});
+        return;
+      }
+    }
     let cover;
     if (imageFile) {
       const inputBuffer = imageFile.buffer;
@@ -218,6 +297,38 @@ export async function countAlbum(req, res) {
     const totalAlbumCount = await prisma.albums.count();
 
     res.status(200).json({totalAlbumCount});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}
+
+export async function filterTypeAlbum(req, res) {
+  try {
+    const {type} = req.body;
+    if (!type) {
+      return res.status(400).json({error: 'Type is required'});
+    }
+    if (!validTypes.includes(type)) {
+      res.status(400).json({error: 'Invalid album type'});
+      return;
+    }
+    const albums = await prisma.albums.findMany({
+      where: {
+        type: {
+          equals: type,
+        },
+      },
+      include: {
+        artist: true,
+        audios: true,
+      },
+      orderBy: {
+        id: 'desc',
+      },
+    });
+
+    res.status(200).json(albums);
   } catch (error) {
     console.error(error);
     res.status(500).json({error: 'Internal Server Error'});

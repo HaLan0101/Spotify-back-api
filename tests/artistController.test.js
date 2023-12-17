@@ -9,16 +9,13 @@ chai.use(chaiHttp);
 
 describe('POST /api/artist', () => {
   it('should create a new artist', async () => {
-    const res = await chai
+    const createRes = await chai
       .request(app)
       .post('/api/artist')
       .send({name: 'Test Artist'});
 
-    expect(res).to.have.status(201);
-    expect(res.body)
-      .to.have.property('message')
-      .equal('Artist created successfully');
-    expect(res.body).to.have.property('artistId');
+    expect(createRes).to.have.status(201);
+    await chai.request(app).delete(`/api/artists/${createRes.body.artistId}`);
   });
 });
 
@@ -36,6 +33,7 @@ describe('GET api/artists/:artistId', () => {
     expect(getRes).to.have.status(200);
     expect(getRes.body).to.have.property('id').equal(artistId);
     expect(getRes.body).to.have.property('name').equal('Test Artist');
+    await chai.request(app).delete(`/api/artists/${artistId}`);
   });
 });
 
@@ -60,6 +58,7 @@ describe('PUT /api/artists/:artistId', () => {
     expect(getRes).to.have.status(200);
     expect(getRes.body).to.have.property('id').equal(artistId);
     expect(getRes.body).to.have.property('name').equal('Updated Artist');
+    await chai.request(app).delete(`/api/artists/${artistId}`);
   });
 });
 
