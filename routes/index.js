@@ -26,6 +26,7 @@ import {
   updateAlbum,
   countAlbum,
 } from '../controllers/albumController';
+import {musicParser, extractFile} from '../controllers/fileController';
 import multer from 'multer';
 
 const storage = multer.memoryStorage();
@@ -59,5 +60,9 @@ router.get('/albums/:albumId', getAlbum);
 router.delete('/albums/:albumId', deleteAlbum);
 router.put('/albums/:albumId', upload.single('imageFile'), updateAlbum);
 router.get('/countAlbum', countAlbum);
+
+// Routes pour les fichiers
+router.get('/musicParser', musicParser);
+router.get('/extractFile', extractFile);
 
 export default router;
