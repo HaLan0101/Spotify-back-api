@@ -193,3 +193,64 @@ export async function updateArtist(req, res) {
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
+
+export async function search(req, res) {
+  try {
+    const {keyword} = req.body;
+
+    if (!keyword) {
+      return res.status(400).json({error: 'Keyword is required'});
+    }
+
+    const artists = await prisma.artists.findMany({
+      where: {
+        name: {
+          contains: keyword,
+          mode: 'insensitive',
+        },
+      },
+      orderBy: {
+        id: 'desc',
+      },
+    });
+
+    const albums = await prisma.albums.findMany({
+      where: {
+        OR: [
+          {
+            title: {
+              contains: keyword,
+              mode: 'insensitive',
+            },
+          },
+          {
+            type: {
+              contains: keyword,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      },
+      orderBy: {
+        id: 'desc',
+      },
+    });
+
+    const audios = await prisma.audios.findMany({
+      where: {
+        title: {
+          contains: keyword,
+          mode: 'insensitive',
+        },
+      },
+      orderBy: {
+        id: 'desc',
+      },
+    });
+
+    res.status(200).json({artists, albums, audios});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}

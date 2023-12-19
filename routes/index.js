@@ -17,6 +17,7 @@ import {
   getArtist,
   deleteArtist,
   updateArtist,
+  search,
 } from '../controllers/artistController';
 import {
   createAlbum,
@@ -53,6 +54,7 @@ router.get('/artists', getArtists);
 router.get('/artists/:artistId', getArtist);
 router.delete('/artists/:artistId', deleteArtist);
 router.put('/artists/:artistId', updateArtist);
+router.post('/search', search);
 
 // Routes pour les albums
 router.post('/album', upload.single('imageFile'), createAlbum);
