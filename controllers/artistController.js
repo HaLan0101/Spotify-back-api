@@ -216,20 +216,10 @@ export async function search(req, res) {
 
     const albums = await prisma.albums.findMany({
       where: {
-        OR: [
-          {
-            title: {
-              contains: keyword,
-              mode: 'insensitive',
-            },
-          },
-          {
-            type: {
-              contains: keyword,
-              mode: 'insensitive',
-            },
-          },
-        ],
+        title: {
+          contains: keyword,
+          mode: 'insensitive',
+        },
       },
       orderBy: {
         id: 'desc',
