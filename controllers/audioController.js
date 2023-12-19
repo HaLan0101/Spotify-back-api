@@ -61,9 +61,15 @@ export async function createAudio(req, res) {
     client.del(cacheKeyArtist);
     client.del(cacheKeyArtists);
 
-    res
-      .status(201)
-      .json({message: 'Audio created successfully', audioId: audio.id});
+    const updatedAudios = await prisma.audios.findMany({
+      where: {albumId: parseInt(albumId)},
+    });
+
+    res.status(201).json({
+      message: 'Audio created successfully',
+      audioId: audio.id,
+      audiosInAlbum: updatedAudios,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({error: 'Internal Server Error'});
