@@ -494,3 +494,38 @@ export async function filterTypeAlbum(req, res) {
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
+
+export async function getUniqueAlbumTypes(req, res) {
+  try {
+    const albums = await prisma.albums.findMany();
+
+    const uniqueTypesSet = new Set(albums.map(album => album.type));
+
+    const uniqueTypesArray = [...uniqueTypesSet];
+
+    res.status(200).json({uniqueAlbumTypes: uniqueTypesArray});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}
+
+export async function last5Albums(req, res) {
+  try {
+    const last5Albums = await prisma.albums.findMany({
+      take: 5,
+      orderBy: {
+        id: 'desc',
+      },
+      include: {
+        artist: true,
+        audios: true,
+      },
+    });
+
+    res.status(200).json(last5Albums);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}

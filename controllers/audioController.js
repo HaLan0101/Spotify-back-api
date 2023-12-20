@@ -491,3 +491,23 @@ export async function countListenTotal(req, res) {
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
+
+export async function last5Audios(req, res) {
+  try {
+    const last5Audios = await prisma.audios.findMany({
+      take: 5,
+      orderBy: {
+        id: 'desc',
+      },
+      include: {
+        album: true,
+        artist: true,
+      },
+    });
+
+    res.status(200).json(last5Audios);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}

@@ -244,3 +244,26 @@ export async function search(req, res) {
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
+
+export async function last5Artists(req, res) {
+  try {
+    const last5Artists = await prisma.artists.findMany({
+      take: 5,
+      orderBy: {
+        id: 'desc',
+      },
+      include: {
+        albums: {
+          include: {
+            audios: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json(last5Artists);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}
