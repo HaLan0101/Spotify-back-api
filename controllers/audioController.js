@@ -61,6 +61,71 @@ export async function createAudio(req, res) {
     client.del(cacheKeyArtist);
     client.del(cacheKeyArtists);
 
+    res
+      .status(201)
+      .json({message: 'Audio created successfully', audioId: audio.id});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}
+
+export async function createAudioFromAlbum(req, res) {
+  try {
+    const {title, albumId} = req.body;
+    const audioFile = req.file;
+    if (!title) {
+      return res.status(400).json({error: 'Title is required for the audio'});
+    }
+    if (!audioFile) {
+      res.status(400).json({error: 'No audio file uploaded'});
+      return;
+    }
+    const inputBuffer = audioFile.buffer;
+
+    const mimeType = audioFile.mimetype;
+    const originalFileName = audioFile.originalname;
+    const lastDotIndex = originalFileName.lastIndexOf('.');
+    const fileName = originalFileName.slice(0, lastDotIndex);
+    const fileExtension = originalFileName.slice(lastDotIndex + 1);
+    let url;
+    if (fileExtension === 'm4a' || fileExtension === 'wav') {
+      url = await uploadFile(inputBuffer, fileName, mimeType);
+    } else {
+      const outputPath = path.join(__dirname, `${fileName}.${fileExtension}`);
+      fs.writeFileSync(outputPath, inputBuffer);
+      await convertToM4a(outputPath, {bitrate: '64k'});
+      fs.unlinkSync(outputPath);
+      const outputPathM4a = path.join(__dirname, `${fileName}.m4a`);
+      const fileBuffer = fs.readFileSync(outputPathM4a);
+      url = await uploadFile(fileBuffer, fileName, mimeType);
+      fs.unlinkSync(outputPathM4a);
+    }
+
+    const album = await prisma.albums.findUnique({
+      where: {id: parseInt(albumId)},
+      select: {artistId: true},
+    });
+
+    const audio = await prisma.audios.create({
+      data: {
+        title,
+        albumId: parseInt(albumId),
+        artistId: album.artistId,
+        file: url,
+      },
+    });
+    const cacheKey = 'audios';
+    const cacheKeyAlbum = `album_${albumId}`;
+    const cacheKeyAlbums = 'albums';
+    const cacheKeyArtist = `artist_${audio.artistId}`;
+    const cacheKeyArtists = 'artists';
+    client.del(cacheKey);
+    client.del(cacheKeyAlbum);
+    client.del(cacheKeyAlbums);
+    client.del(cacheKeyArtist);
+    client.del(cacheKeyArtists);
+
     const updatedAudios = await prisma.audios.findMany({
       where: {albumId: parseInt(albumId)},
     });
@@ -179,6 +244,45 @@ export async function deleteAudio(req, res) {
   }
 }
 
+export async function deleteAudioFromAlbum(req, res) {
+  try {
+    const {audioId} = req.params;
+
+    const audio = await prisma.audios.delete({
+      where: {id: parseInt(audioId)},
+      include: {
+        album: true,
+        artist: true,
+      },
+    });
+    const cacheKeyOne = `audio_${audioId}`;
+    const cacheKey = 'audios';
+    const cacheKeyAlbum = `album_${audio.albumId}`;
+    const cacheKeyAlbums = 'albums';
+    const cacheKeyArtist = `artist_${audio.artistId}`;
+    const cacheKeyArtists = 'artists';
+    client.del(cacheKey);
+    client.del(cacheKeyOne);
+    client.del(cacheKeyAlbum);
+    client.del(cacheKeyAlbums);
+    client.del(cacheKeyArtist);
+    client.del(cacheKeyArtists);
+
+    const updatedAudios = await prisma.audios.findMany({
+      where: {albumId: parseInt(audio.albumId)},
+    });
+
+    res.status(201).json({
+      message: 'Audio deleted successfully',
+      audioId: audio.id,
+      audiosInAlbum: updatedAudios,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}
+
 export async function updateAudio(req, res) {
   try {
     const {audioId} = req.params;
@@ -233,6 +337,66 @@ export async function updateAudio(req, res) {
       },
     });
     res.status(200).json(audios);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}
+
+export async function updateAudioFromAlbum(req, res) {
+  try {
+    const {audioId} = req.params;
+    const {title} = req.body;
+    const audioFile = req.file;
+    if (!audioFile && !title) {
+      res
+        .status(400)
+        .json({error: 'Title or audio is required for the update'});
+      return;
+    }
+    let url;
+    if (audioFile) {
+      const inputBuffer = audioFile.buffer;
+
+      const mimeType = audioFile.mimetype;
+      const originalFileName = audioFile.originalname;
+      const [fileName, fileExtension] = originalFileName.split('.');
+      const outputPath = path.join(__dirname, `${fileName}.${fileExtension}`);
+      fs.writeFileSync(outputPath, inputBuffer);
+      await convertToM4a(outputPath, {bitrate: '64k'});
+      fs.unlinkSync(outputPath);
+      const outputPathM4a = path.join(__dirname, `${fileName}.m4a`);
+      const fileBuffer = fs.readFileSync(outputPathM4a);
+      const urlFile = await uploadFile(fileBuffer, fileName, mimeType);
+      url = urlFile;
+      fs.unlinkSync(outputPathM4a);
+    }
+    const audio = await prisma.audios.update({
+      where: {id: parseInt(audioId)},
+      data: {title: title, file: url},
+    });
+    const cacheKeyOne = `audio_${audioId}`;
+    const cacheKey = 'audios';
+    const cacheKeyAlbum = `album_${audio.albumId}`;
+    const cacheKeyAlbums = 'albums';
+    const cacheKeyArtist = `artist_${audio.artistId}`;
+    const cacheKeyArtists = 'artists';
+    client.del(cacheKey);
+    client.del(cacheKeyOne);
+    client.del(cacheKeyAlbum);
+    client.del(cacheKeyAlbums);
+    client.del(cacheKeyArtist);
+    client.del(cacheKeyArtists);
+
+    const updatedAudios = await prisma.audios.findMany({
+      where: {albumId: parseInt(audio.albumId)},
+    });
+
+    res.status(201).json({
+      message: 'Audio updated successfully',
+      audioId: audio.id,
+      audiosInAlbum: updatedAudios,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({error: 'Internal Server Error'});

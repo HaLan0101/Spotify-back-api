@@ -118,6 +118,58 @@ export async function createAlbum(req, res) {
   }
 }
 
+export async function createAlbumFromArtist(req, res) {
+  try {
+    const {title, artistId, type} = req.body;
+    const imageFile = req.file;
+    if (!title) {
+      return res.status(400).json({error: 'Title is required for the album'});
+    }
+    if (!imageFile) {
+      return res.status(400).json({error: 'No image file uploaded'});
+    }
+    if (!type) {
+      return res.status(400).json({error: 'Type is required '});
+    }
+    if (!validTypes.includes(type)) {
+      res.status(400).json({error: 'Invalid album type'});
+      return;
+    }
+    const inputBuffer = imageFile.buffer;
+    const mimeType = imageFile.mimetype;
+    const originalFileName = imageFile.originalname;
+    // eslint-disable-next-line no-unused-vars
+    const [fileName, fileExtension] = originalFileName.split('.');
+    const url = await uploadImage(inputBuffer, fileName, mimeType);
+    const album = await prisma.albums.create({
+      data: {
+        title,
+        artistId: parseInt(artistId),
+        cover: url,
+        type,
+      },
+    });
+    const cacheKey = 'albums';
+    const cacheKeyArtist = `artist_${artistId}`;
+    const cacheKeyArtists = 'artists';
+    client.del(cacheKey);
+    client.del(cacheKeyArtist);
+    client.del(cacheKeyArtists);
+    const updatedAlbums = await prisma.albums.findMany({
+      where: {artistId: parseInt(artistId)},
+    });
+
+    res.status(201).json({
+      message: 'Album created successfully',
+      albumId: album.id,
+      albumsInArtist: updatedAlbums,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}
+
 export async function getAlbums(req, res) {
   try {
     const cacheKey = 'albums';
@@ -223,6 +275,46 @@ export async function deleteAlbum(req, res) {
   }
 }
 
+export async function deleteAlbumFromArtist(req, res) {
+  try {
+    const {albumId} = req.params;
+
+    const album = await prisma.albums.delete({
+      where: {id: parseInt(albumId)},
+      include: {
+        audios: true,
+        artist: true,
+      },
+    });
+    const cacheKeyOne = `album_${albumId}`;
+    const cacheKey = 'albums';
+    album.audios.forEach(audio => {
+      const cacheKeyAudio = `audio_${audio.id}`;
+      client.del(cacheKeyAudio);
+    });
+    const cacheKeyAudios = 'audios';
+    const cacheKeyArtist = `artist_${album.artistId}`;
+    const cacheKeyArtists = 'artists';
+    client.del(cacheKey);
+    client.del(cacheKeyOne);
+    client.del(cacheKeyAudios);
+    client.del(cacheKeyArtist);
+    client.del(cacheKeyArtists);
+    const updatedAlbums = await prisma.albums.findMany({
+      where: {artistId: parseInt(album.artistId)},
+    });
+
+    res.status(201).json({
+      message: 'Album deleted successfully',
+      albumId: album.id,
+      albumsInArtist: updatedAlbums,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}
+
 export async function updateAlbum(req, res) {
   try {
     const {albumId} = req.params;
@@ -286,6 +378,74 @@ export async function updateAlbum(req, res) {
       },
     });
     res.status(200).json(albums);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+}
+
+export async function updateAlbumFromArtist(req, res) {
+  try {
+    const {albumId} = req.params;
+    const {title, type} = req.body;
+    const imageFile = req.file;
+    if (!imageFile && !title && !type) {
+      res
+        .status(400)
+        .json({error: 'Title or image or type is required for the update'});
+      return;
+    }
+    if (type) {
+      if (!validTypes.includes(type)) {
+        res.status(400).json({error: 'Invalid album type'});
+        return;
+      }
+    }
+    let cover;
+    if (imageFile) {
+      const inputBuffer = imageFile.buffer;
+      const mimeType = imageFile.mimetype;
+      const originalFileName = imageFile.originalname;
+      // eslint-disable-next-line no-unused-vars
+      const [fileName, fileExtension] = originalFileName.split('.');
+      const urlFile = await uploadImage(inputBuffer, fileName, mimeType);
+      cover = urlFile;
+    }
+    const album = await prisma.albums.update({
+      where: {id: parseInt(albumId)},
+      data: {
+        title: title,
+        cover: cover,
+        type,
+      },
+      include: {
+        audios: true,
+        artist: true,
+      },
+    });
+    const cacheKeyOne = `album_${albumId}`;
+    const cacheKey = 'albums';
+    album.audios.forEach(audio => {
+      const cacheKeyAudio = `audio_${audio.id}`;
+      client.del(cacheKeyAudio);
+    });
+    const cacheKeyAudios = 'audios';
+    const cacheKeyArtist = `artist_${album.artistId}`;
+    const cacheKeyArtists = 'artists';
+    client.del(cacheKey);
+    client.del(cacheKeyOne);
+    client.del(cacheKeyAudios);
+    client.del(cacheKeyArtist);
+    client.del(cacheKeyArtists);
+    const updatedAlbums = await prisma.albums.findMany({
+      where: {artistId: parseInt(album.artistId)},
+    });
+
+    res.status(201).json({
+      message: 'Album updated successfully',
+      albumId: album.id,
+      albumsInArtist: updatedAlbums,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({error: 'Internal Server Error'});
