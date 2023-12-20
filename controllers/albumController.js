@@ -510,10 +510,10 @@ export async function getUniqueAlbumTypes(req, res) {
   }
 }
 
-export async function last5Albums(req, res) {
+export async function last10Albums(req, res) {
   try {
     const last5Albums = await prisma.albums.findMany({
-      take: 5,
+      take: 10,
       orderBy: {
         id: 'desc',
       },

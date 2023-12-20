@@ -492,10 +492,10 @@ export async function countListenTotal(req, res) {
   }
 }
 
-export async function last5Audios(req, res) {
+export async function last10Audios(req, res) {
   try {
     const last5Audios = await prisma.audios.findMany({
-      take: 5,
+      take: 10,
       orderBy: {
         id: 'desc',
       },

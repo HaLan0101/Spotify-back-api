@@ -245,10 +245,10 @@ export async function search(req, res) {
   }
 }
 
-export async function last5Artists(req, res) {
+export async function last10Artists(req, res) {
   try {
     const last5Artists = await prisma.artists.findMany({
-      take: 5,
+      take: 10,
       orderBy: {
         id: 'desc',
       },

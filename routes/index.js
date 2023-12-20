@@ -13,7 +13,7 @@ import {
   createAudioFromAlbum,
   updateAudioFromAlbum,
   deleteAudioFromAlbum,
-  last5Audios,
+  last10Audios,
 } from '../controllers/audioController';
 import {
   createArtist,
@@ -22,7 +22,7 @@ import {
   deleteArtist,
   updateArtist,
   search,
-  last5Artists,
+  last10Artists,
 } from '../controllers/artistController';
 import {
   createAlbum,
@@ -36,7 +36,7 @@ import {
   updateAlbumFromArtist,
   deleteAlbumFromArtist,
   getUniqueAlbumTypes,
-  last5Albums,
+  last10Albums,
 } from '../controllers/albumController';
 import {musicParser, extractFile} from '../controllers/fileController';
 import multer from 'multer';
@@ -68,7 +68,7 @@ router.put(
   updateAudioFromAlbum,
 );
 router.delete('/audioFromAlbum/:audioId', deleteAudioFromAlbum);
-router.get('/last5Audios', last5Audios);
+router.get('/last10Audios', last10Audios);
 
 // Routes pour les artistes
 router.post('/artist', createArtist);
@@ -77,7 +77,7 @@ router.get('/artists/:artistId', getArtist);
 router.delete('/artists/:artistId', deleteArtist);
 router.put('/artists/:artistId', updateArtist);
 router.post('/search', search);
-router.get('/last5Artists', last5Artists);
+router.get('/last10Artists', last10Artists);
 
 // Routes pour les albums
 router.post('/album', upload.single('imageFile'), createAlbum);
@@ -99,7 +99,7 @@ router.put(
   updateAlbumFromArtist,
 );
 router.get('/getTypes', getUniqueAlbumTypes);
-router.get('/last5Albums', last5Albums);
+router.get('/last10Albums', last10Albums);
 
 // Routes pour les fichiers
 router.get('/musicParser', musicParser);
