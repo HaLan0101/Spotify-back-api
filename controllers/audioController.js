@@ -144,22 +144,40 @@ export async function createAudioFromAlbum(req, res) {
 export async function getAudios(req, res) {
   try {
     const cacheKey = 'audios';
-    client.get(cacheKey, async (err, cachedData) => {
+    const currentPageKey = 'currentPage';
+
+    const {page} = req.query;
+    const currentPage = parseInt(page) || 1;
+
+    const pageSize = 10;
+    const skip = (currentPage - 1) * pageSize;
+
+    client.get(currentPageKey, async (err, cachedPage) => {
       if (err) throw err;
 
-      if (cachedData) {
-        const audios = JSON.parse(cachedData);
-        res.status(200).json(audios);
+      if (cachedPage && parseInt(cachedPage) === currentPage) {
+        client.get(cacheKey, (err, cachedData) => {
+          if (err) throw err;
+          if (cachedData) {
+            const audios = JSON.parse(cachedData);
+            res.status(200).json(audios);
+          }
+        });
       } else {
+        client.set(currentPageKey, currentPage);
+
         const audios = await prisma.audios.findMany({
           include: {
             album: true,
             artist: true,
           },
+          skip,
+          take: pageSize,
           orderBy: {
             id: 'desc',
           },
         });
+
         client.setex(cacheKey, 3600, JSON.stringify(audios));
         res.status(200).json(audios);
       }
