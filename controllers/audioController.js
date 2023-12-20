@@ -437,10 +437,16 @@ export async function playedAudio(req, res) {
 export async function lastListenedAudios(req, res) {
   try {
     const lastListenedAudios = await prisma.audios.findMany({
-      orderBy: {lastListenedAt: 'desc'},
+      where: {
+        lastListenedAt: {
+          not: null,
+        },
+      },
+      orderBy: {
+        lastListenedAt: 'desc',
+      },
       take: 20,
     });
-
     res.status(200).json(lastListenedAudios);
   } catch (error) {
     console.error(error);
@@ -451,6 +457,11 @@ export async function lastListenedAudios(req, res) {
 export async function topListenedAudios(req, res) {
   try {
     const topAudios = await prisma.audios.findMany({
+      where: {
+        listenCount: {
+          not: 0,
+        },
+      },
       orderBy: {
         listenCount: 'desc',
       },
