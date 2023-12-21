@@ -23,6 +23,7 @@ import {
   updateArtist,
   search,
   last10Artists,
+  countArtist,
 } from '../controllers/artistController';
 import {
   createAlbum,
@@ -78,6 +79,7 @@ router.delete('/artists/:artistId', deleteArtist);
 router.put('/artists/:artistId', updateArtist);
 router.post('/search', search);
 router.get('/last10Artists', last10Artists);
+router.get('/countArtist', countArtist);
 
 // Routes pour les albums
 router.post('/album', upload.single('imageFile'), createAlbum);
