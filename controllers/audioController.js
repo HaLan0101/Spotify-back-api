@@ -460,6 +460,10 @@ export async function lastListenedAudios(req, res) {
           not: null,
         },
       },
+      include: {
+        album: true,
+        artist: true,
+      },
       orderBy: {
         lastListenedAt: 'desc',
       },
@@ -479,6 +483,10 @@ export async function topListenedAudios(req, res) {
         listenCount: {
           not: 0,
         },
+      },
+      include: {
+        album: true,
+        artist: true,
       },
       orderBy: {
         listenCount: 'desc',
