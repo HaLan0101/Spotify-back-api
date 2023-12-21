@@ -128,6 +128,9 @@ export async function createAudioFromAlbum(req, res) {
 
     const updatedAudios = await prisma.audios.findMany({
       where: {albumId: parseInt(albumId)},
+      orderBy: {
+        id: 'desc',
+      },
     });
 
     res.status(201).json({
@@ -288,6 +291,9 @@ export async function deleteAudioFromAlbum(req, res) {
 
     const updatedAudios = await prisma.audios.findMany({
       where: {albumId: parseInt(audio.albumId)},
+      orderBy: {
+        id: 'desc',
+      },
     });
 
     res.status(201).json({
@@ -408,6 +414,9 @@ export async function updateAudioFromAlbum(req, res) {
 
     const updatedAudios = await prisma.audios.findMany({
       where: {albumId: parseInt(audio.albumId)},
+      orderBy: {
+        id: 'desc',
+      },
     });
 
     res.status(201).json({

@@ -157,6 +157,9 @@ export async function createAlbumFromArtist(req, res) {
     client.del(cacheKeyArtists);
     const updatedAlbums = await prisma.albums.findMany({
       where: {artistId: parseInt(artistId)},
+      orderBy: {
+        id: 'desc',
+      },
     });
 
     res.status(201).json({
@@ -293,6 +296,9 @@ export async function deleteAlbumFromArtist(req, res) {
     client.del(cacheKeyArtists);
     const updatedAlbums = await prisma.albums.findMany({
       where: {artistId: parseInt(album.artistId)},
+      orderBy: {
+        id: 'desc',
+      },
     });
 
     res.status(201).json({
@@ -421,6 +427,9 @@ export async function updateAlbumFromArtist(req, res) {
     client.del(cacheKeyArtists);
     const updatedAlbums = await prisma.albums.findMany({
       where: {artistId: parseInt(album.artistId)},
+      orderBy: {
+        id: 'desc',
+      },
     });
 
     res.status(201).json({
