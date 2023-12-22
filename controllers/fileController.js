@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 const {uploadImage, uploadFile} = require('../scripts/aws');
 const mimeTypes = require('mime-types');
 const {createExtractorFromFile} = require('node-unrar-js');
-export async function musicParser(req, res) {
+async function musicParser(req, res) {
   try {
     const baseDirectory = path.join(__dirname, 'audios');
     const directories = fs.readdirSync(baseDirectory);
@@ -190,7 +190,7 @@ export async function musicParser(req, res) {
   }
 }
 
-export async function extractFile(req, res) {
+async function extractFile(req, res) {
   try {
     const baseDirectory = path.join(__dirname, 'rar');
     const outputDirectory = path.join(__dirname, 'audios');
@@ -223,3 +223,5 @@ async function extractRarArchive(file, destination) {
     console.error(err);
   }
 }
+
+module.exports = {musicParser, extractFile};

@@ -2,7 +2,7 @@ const {PrismaClient} = require('@prisma/client');
 const prisma = new PrismaClient();
 const client = require('../redis');
 
-export async function createArtist(req, res) {
+async function createArtist(req, res) {
   try {
     const {name} = req.body;
     if (!name) {
@@ -26,7 +26,7 @@ export async function createArtist(req, res) {
   }
 }
 
-export async function getArtists(req, res) {
+async function getArtists(req, res) {
   try {
     const cacheKey = 'artists';
     client.get(cacheKey, async (err, cachedData) => {
@@ -58,7 +58,7 @@ export async function getArtists(req, res) {
   }
 }
 
-export async function getArtist(req, res) {
+async function getArtist(req, res) {
   try {
     const {artistId} = req.params;
     const cacheKey = `artist_${artistId}`;
@@ -97,7 +97,7 @@ export async function getArtist(req, res) {
   }
 }
 
-export async function deleteArtist(req, res) {
+async function deleteArtist(req, res) {
   try {
     const {artistId} = req.params;
 
@@ -144,7 +144,7 @@ export async function deleteArtist(req, res) {
   }
 }
 
-export async function updateArtist(req, res) {
+async function updateArtist(req, res) {
   try {
     const {artistId} = req.params;
     const {name} = req.body;
@@ -194,7 +194,7 @@ export async function updateArtist(req, res) {
   }
 }
 
-export async function search(req, res) {
+async function search(req, res) {
   try {
     const {keyword} = req.body;
 
@@ -245,7 +245,7 @@ export async function search(req, res) {
   }
 }
 
-export async function last10Artists(req, res) {
+async function last10Artists(req, res) {
   try {
     const last5Artists = await prisma.artists.findMany({
       take: 10,
@@ -268,7 +268,7 @@ export async function last10Artists(req, res) {
   }
 }
 
-export async function countArtist(req, res) {
+async function countArtist(req, res) {
   try {
     const totalArtistCount = await prisma.artists.count();
 
@@ -278,3 +278,14 @@ export async function countArtist(req, res) {
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
+
+module.exports = {
+  createArtist,
+  getArtists,
+  getArtist,
+  deleteArtist,
+  updateArtist,
+  search,
+  last10Artists,
+  countArtist,
+};

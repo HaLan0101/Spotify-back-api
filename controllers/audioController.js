@@ -5,7 +5,7 @@ const client = require('../redis');
 const {PrismaClient} = require('@prisma/client');
 const {uploadFile} = require('../scripts/aws');
 const prisma = new PrismaClient();
-export async function createAudio(req, res) {
+async function createAudio(req, res) {
   try {
     const {title, albumId} = req.body;
     const audioFile = req.file;
@@ -70,7 +70,7 @@ export async function createAudio(req, res) {
   }
 }
 
-export async function createAudioFromAlbum(req, res) {
+async function createAudioFromAlbum(req, res) {
   try {
     const {title, albumId} = req.body;
     const audioFile = req.file;
@@ -144,7 +144,7 @@ export async function createAudioFromAlbum(req, res) {
   }
 }
 
-export async function getAudios(req, res) {
+async function getAudios(req, res) {
   try {
     const cacheKey = 'audios';
     const currentPageKey = 'currentPage';
@@ -191,7 +191,7 @@ export async function getAudios(req, res) {
   }
 }
 
-export async function getAudio(req, res) {
+async function getAudio(req, res) {
   try {
     const {audioId} = req.params;
     const cacheKey = `audio_${audioId}`;
@@ -226,7 +226,7 @@ export async function getAudio(req, res) {
   }
 }
 
-export async function deleteAudio(req, res) {
+async function deleteAudio(req, res) {
   try {
     const {audioId} = req.params;
 
@@ -265,7 +265,7 @@ export async function deleteAudio(req, res) {
   }
 }
 
-export async function deleteAudioFromAlbum(req, res) {
+async function deleteAudioFromAlbum(req, res) {
   try {
     const {audioId} = req.params;
 
@@ -307,7 +307,7 @@ export async function deleteAudioFromAlbum(req, res) {
   }
 }
 
-export async function updateAudio(req, res) {
+async function updateAudio(req, res) {
   try {
     const {audioId} = req.params;
     const {title} = req.body;
@@ -367,7 +367,7 @@ export async function updateAudio(req, res) {
   }
 }
 
-export async function updateAudioFromAlbum(req, res) {
+async function updateAudioFromAlbum(req, res) {
   try {
     const {audioId} = req.params;
     const {title} = req.body;
@@ -430,7 +430,7 @@ export async function updateAudioFromAlbum(req, res) {
   }
 }
 
-export async function playedAudio(req, res) {
+async function playedAudio(req, res) {
   try {
     const {audioId} = req.params;
     const audio = await prisma.audios.update({
@@ -461,7 +461,7 @@ export async function playedAudio(req, res) {
   }
 }
 
-export async function lastListenedAudios(req, res) {
+async function lastListenedAudios(req, res) {
   try {
     const lastListenedAudios = await prisma.audios.findMany({
       where: {
@@ -485,7 +485,7 @@ export async function lastListenedAudios(req, res) {
   }
 }
 
-export async function topListenedAudios(req, res) {
+async function topListenedAudios(req, res) {
   try {
     const topAudios = await prisma.audios.findMany({
       where: {
@@ -510,7 +510,7 @@ export async function topListenedAudios(req, res) {
   }
 }
 
-export async function countAudio(req, res) {
+async function countAudio(req, res) {
   try {
     const totalAudioCount = await prisma.audios.count();
 
@@ -521,7 +521,7 @@ export async function countAudio(req, res) {
   }
 }
 
-export async function countListenTotal(req, res) {
+async function countListenTotal(req, res) {
   try {
     const totalListenCount = await prisma.audios.aggregate({
       _sum: {
@@ -538,7 +538,7 @@ export async function countListenTotal(req, res) {
   }
 }
 
-export async function last10Audios(req, res) {
+async function last10Audios(req, res) {
   try {
     const last5Audios = await prisma.audios.findMany({
       take: 10,
@@ -557,3 +557,20 @@ export async function last10Audios(req, res) {
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
+
+module.exports = {
+  createAudio,
+  getAudios,
+  getAudio,
+  updateAudio,
+  deleteAudio,
+  playedAudio,
+  lastListenedAudios,
+  topListenedAudios,
+  countAudio,
+  countListenTotal,
+  createAudioFromAlbum,
+  updateAudioFromAlbum,
+  deleteAudioFromAlbum,
+  last10Audios,
+};

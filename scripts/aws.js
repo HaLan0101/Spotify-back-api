@@ -9,7 +9,7 @@ AWS.config.update({
 });
 const s3 = new AWS.S3();
 const bucketName = 'spotifybucket2023';
-export function uploadFile(file, filename, mimeType) {
+function uploadFile(file, filename, mimeType) {
   // eslint-disable-next-line no-unused-vars
   return new Promise((resolve, reject) => {
     const dateTime = giveCurrentDateTime();
@@ -38,7 +38,7 @@ export function uploadFile(file, filename, mimeType) {
   });
 }
 
-export function uploadImage(file, filename, mimeType) {
+function uploadImage(file, filename, mimeType) {
   // eslint-disable-next-line no-unused-vars
   return new Promise((resolve, reject) => {
     const dateTime = giveCurrentDateTime();
@@ -76,3 +76,4 @@ const giveCurrentDateTime = () => {
   const dateTime = date + '-' + time;
   return dateTime;
 };
+module.exports = {uploadFile, uploadImage};

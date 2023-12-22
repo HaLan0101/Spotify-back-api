@@ -72,7 +72,7 @@ const validTypes = [
   'Jazz-rock',
   'Glam rock',
 ];
-export async function createAlbum(req, res) {
+async function createAlbum(req, res) {
   try {
     const {title, artistId, type} = req.body;
     const imageFile = req.file;
@@ -118,7 +118,7 @@ export async function createAlbum(req, res) {
   }
 }
 
-export async function createAlbumFromArtist(req, res) {
+async function createAlbumFromArtist(req, res) {
   try {
     const {title, artistId, type} = req.body;
     const imageFile = req.file;
@@ -173,7 +173,7 @@ export async function createAlbumFromArtist(req, res) {
   }
 }
 
-export async function getAlbums(req, res) {
+async function getAlbums(req, res) {
   try {
     const cacheKey = 'albums';
     client.get(cacheKey, async (err, cachedData) => {
@@ -202,7 +202,7 @@ export async function getAlbums(req, res) {
   }
 }
 
-export async function getAlbum(req, res) {
+async function getAlbum(req, res) {
   try {
     const {albumId} = req.params;
     const cacheKey = `album_${albumId}`;
@@ -237,7 +237,7 @@ export async function getAlbum(req, res) {
   }
 }
 
-export async function deleteAlbum(req, res) {
+async function deleteAlbum(req, res) {
   try {
     const {albumId} = req.params;
 
@@ -269,7 +269,7 @@ export async function deleteAlbum(req, res) {
   }
 }
 
-export async function deleteAlbumFromArtist(req, res) {
+async function deleteAlbumFromArtist(req, res) {
   try {
     const {albumId} = req.params;
 
@@ -312,7 +312,7 @@ export async function deleteAlbumFromArtist(req, res) {
   }
 }
 
-export async function updateAlbum(req, res) {
+async function updateAlbum(req, res) {
   try {
     const {albumId} = req.params;
     const {title, type} = req.body;
@@ -372,7 +372,7 @@ export async function updateAlbum(req, res) {
   }
 }
 
-export async function updateAlbumFromArtist(req, res) {
+async function updateAlbumFromArtist(req, res) {
   try {
     const {albumId} = req.params;
     const {title, type} = req.body;
@@ -443,7 +443,7 @@ export async function updateAlbumFromArtist(req, res) {
   }
 }
 
-export async function countAlbum(req, res) {
+async function countAlbum(req, res) {
   try {
     const totalAlbumCount = await prisma.albums.count();
 
@@ -454,7 +454,7 @@ export async function countAlbum(req, res) {
   }
 }
 
-export async function filterTypeAlbum(req, res) {
+async function filterTypeAlbum(req, res) {
   try {
     const {type} = req.body;
     if (!type) {
@@ -486,7 +486,7 @@ export async function filterTypeAlbum(req, res) {
   }
 }
 
-export async function getUniqueAlbumTypes(req, res) {
+async function getUniqueAlbumTypes(req, res) {
   try {
     const albums = await prisma.albums.findMany();
 
@@ -501,7 +501,7 @@ export async function getUniqueAlbumTypes(req, res) {
   }
 }
 
-export async function last10Albums(req, res) {
+async function last10Albums(req, res) {
   try {
     const last5Albums = await prisma.albums.findMany({
       take: 10,
@@ -520,3 +520,18 @@ export async function last10Albums(req, res) {
     res.status(500).json({error: 'Internal Server Error'});
   }
 }
+
+module.exports = {
+  createAlbum,
+  getAlbums,
+  getAlbum,
+  deleteAlbum,
+  updateAlbum,
+  countAlbum,
+  filterTypeAlbum,
+  createAlbumFromArtist,
+  updateAlbumFromArtist,
+  deleteAlbumFromArtist,
+  getUniqueAlbumTypes,
+  last10Albums,
+};
