@@ -1,7 +1,7 @@
-import {describe, it} from 'mocha';
-import chai from 'chai';
-import chaiHttp from 'chai-http';
-import app from '../app';
+const {describe, it} = require('mocha');
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const app = require('../app');
 
 const {expect} = chai;
 

@@ -1,7 +1,7 @@
-import client from '../redis';
-import {uploadImage} from '../scripts/aws';
-import {PrismaClient} from '@prisma/client';
+const {uploadImage} = require('../scripts/aws');
+const {PrismaClient} = require('@prisma/client');
 const prisma = new PrismaClient();
+const client = require('../redis');
 const validTypes = [
   'Jazz',
   "Rock 'n' Roll",

@@ -1,9 +1,9 @@
-import path from 'path';
-import fs from 'fs';
-import {convertToM4a} from '../scripts/converter';
-import client from '../redis';
-import {PrismaClient} from '@prisma/client';
-import {uploadFile} from '../scripts/aws';
+const path = require('path');
+const fs = require('fs');
+const {convertToM4a} = require('../scripts/converter');
+const client = require('../redis');
+const {PrismaClient} = require('@prisma/client');
+const {uploadFile} = require('../scripts/aws');
 const prisma = new PrismaClient();
 export async function createAudio(req, res) {
   try {

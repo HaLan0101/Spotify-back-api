@@ -1,11 +1,11 @@
-import mm from 'music-metadata';
-import path from 'path';
-import fs from 'fs';
-import {PrismaClient} from '@prisma/client';
+const mm = require('music-metadata');
+const path = require('path');
+const fs = require('fs');
+const {PrismaClient} = require('@prisma/client');
 const prisma = new PrismaClient();
-import {uploadImage, uploadFile} from '../scripts/aws';
-import mimeTypes from 'mime-types';
-import {createExtractorFromFile} from 'node-unrar-js';
+const {uploadImage, uploadFile} = require('../scripts/aws');
+const mimeTypes = require('mime-types');
+const {createExtractorFromFile} = require('node-unrar-js');
 export async function musicParser(req, res) {
   try {
     const baseDirectory = path.join(__dirname, 'audios');

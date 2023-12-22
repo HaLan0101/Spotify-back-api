@@ -1,6 +1,6 @@
-import {PrismaClient} from '@prisma/client';
+const {PrismaClient} = require('@prisma/client');
 const prisma = new PrismaClient();
-import client from '../redis';
+const client = require('../redis');
 
 export async function createArtist(req, res) {
   try {

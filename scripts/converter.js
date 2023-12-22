@@ -1,5 +1,5 @@
-import ffmpeg from 'fluent-ffmpeg';
-import ffmpegPath from '@ffmpeg-installer/ffmpeg';
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg');
 
 export function convertToM4a(filePath, options = {}) {
   return new Promise((resolve, reject) => {

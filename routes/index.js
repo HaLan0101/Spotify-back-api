@@ -1,5 +1,5 @@
-import express from 'express';
-import {
+const express = require('express');
+const {
   createAudio,
   getAudios,
   getAudio,
@@ -14,8 +14,8 @@ import {
   updateAudioFromAlbum,
   deleteAudioFromAlbum,
   last10Audios,
-} from '../controllers/audioController';
-import {
+} = require('../controllers/audioController');
+const {
   createArtist,
   getArtists,
   getArtist,
@@ -24,8 +24,8 @@ import {
   search,
   last10Artists,
   countArtist,
-} from '../controllers/artistController';
-import {
+} = require('../controllers/artistController');
+const {
   createAlbum,
   getAlbums,
   getAlbum,
@@ -38,9 +38,9 @@ import {
   deleteAlbumFromArtist,
   getUniqueAlbumTypes,
   last10Albums,
-} from '../controllers/albumController';
-import {musicParser, extractFile} from '../controllers/fileController';
-import multer from 'multer';
+} = require('../controllers/albumController');
+const {musicParser, extractFile} = require('../controllers/fileController');
+const multer = require('multer');
 
 const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
@@ -107,4 +107,4 @@ router.get('/last10Albums', last10Albums);
 router.get('/musicParser', musicParser);
 router.get('/extractFile', extractFile);
 
-export default router;
+module.exports = router;
