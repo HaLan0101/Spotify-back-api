@@ -16,9 +16,13 @@ Liens GITHUB pour le rendu :
 Mise en Prod
 Lien de vos projets mis en prod :
 
-BackOffice :
-Front :
-Back : http://13.36.211.213/api/artists
+- BackOffice :
+- Front :
+- Back : http://13.36.211.213/api/artists
+
+SOUHAITEZ-VOUS UNE ANALYSE ET DES RETOURS CONCRETS SUR VOTRE CODE ?
+
+- Oui
 
 Description :
 
