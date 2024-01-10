@@ -6,14 +6,12 @@
 - EGRO Kejsi
 - LEHNA Ryme
 
-Rendu
 Liens GITHUB pour le rendu :
 
 - BackOffice : https://github.com/HaLan0101/Spotify-back-office
 - Front : https://github.com/Rymuu/spotify-front
 - Back : https://github.com/HaLan0101/Spotify-back-api
 
-Mise en Prod
 Lien de vos projets mis en prod :
 
 - BackOffice : http://35.181.59.217
