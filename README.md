@@ -15,7 +15,7 @@ Liens GITHUB pour le rendu :
 Lien de vos projets mis en prod :
 
 - BackOffice : https://dangngochalan.com/
-- Front : https://spotify-front-mu.vercel.app/
+- Front : https://spotify-front-blue.vercel.app/
 - Back : https://dangngochalan.com/api/artists
 
 SOUHAITEZ-VOUS UNE ANALYSE ET DES RETOURS CONCRETS SUR VOTRE CODE ?
